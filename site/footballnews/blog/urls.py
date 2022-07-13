@@ -7,6 +7,7 @@ urlpatterns = [
     path('addpage/', addpage, name='add_page'),
     path('contact/', contact, name='contact'),
     path('login/', login, name='login'),
+    path('registr/', RegisterUser.as_view(), name='register'),
     path('cats/<slug:cat>', categories),
     path('post/<slug:post_slug>/', show_post, name='post'),
     path('category/<int:cat_id>/', show_category, name='category'),

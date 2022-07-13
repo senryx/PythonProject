@@ -1,19 +1,39 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse, HttpResponseNotFound
-
-from blog.forms import AddPostForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from blog.forms import AddPostForm, RegisterUserForm
 from blog.models import *
+from blog.utils import DataMixin
 
-menu = ['О сайте', 'Добавить статью', 'Обратная связь', 'Войти']
+
+menu = [{'title': "О сайте", 'url_name': 'about'},
+        {'title': "Добавить статью", 'url_name': 'add_page'},
+        {'title': "Обратная связь", 'url_name': 'contact'},
+        #{'title': "Войти", 'url_name': 'login'}
+]
+
+
+class RegisterUser(DataMixin, CreateView):
+    form_class = RegisterUserForm
+    template_name = 'blog/register.html'
+    success_url = reverse_lazy('login')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title="Регистрация")
+        return dict(list(context.items()) + list(c_def.items()))
+
 
 
 def addpage(request):
     if request.method == 'POST':
-        form = AddPostForm(request.POST, request.FIlES)
+        form = AddPostForm(request.POST, request.FILES)
         if form.is_valid():
             #print(form.cleaned_data)
             form.save()
-            return redirect('Home')
+            return redirect('home')
     else:
         form = AddPostForm()
     return render(request, 'blog/addpage.html', {'form': form, 'menu': menu, 'title': 'Добавление статьи'})
@@ -27,8 +47,8 @@ def login(request):
     return HttpResponse('Авторизация')
 
 
-def show_post(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
+def show_post(request, post_slug):
+    post = get_object_or_404(Post, pk=post_slug)
     context = {
         'post': post,
         'menu': menu,
@@ -40,8 +60,8 @@ def show_post(request, post_id):
 
 
 def show_category(request, cat_id):
-    posts = Post.object.filter(cat_id=cat_id)
-    #cats = Category.object.all()
+    posts = Post.objects.filter(cat_id=cat_id)
+    #cats = Category.objects.all()
 
     if len(posts) == 0:
         raise HttpResponseNotFound
@@ -50,21 +70,21 @@ def show_category(request, cat_id):
         'post': posts,
         #'cats': cats,
         'menu': menu,
-        'title': 'Главная страница',
+        'title': 'Оттображение по рубрикам',
         'cat_selected': cat_id,
     }
 
     return render(request, 'blog/index.html', context=context)
 
 
-def index(request, cat_id):
-    posts = Post.object.all()
+def index(request):
+    posts = Post.objects.all()
 
     context = {
         'post': posts,
         'menu': menu,
-        'title': 'Отображение по рубрикам',
-        'cat_selected': cat_id,
+        'title': 'Главная страница',
+        'cat_selected': 0,
     }
     return render(request, 'blog/index.html', context=context)
 
