@@ -1,5 +1,6 @@
 {% load static %}
 {% load blog_tags %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,21 +13,25 @@
 <body>
 <table class="table-page" border=0 cellpadding="0" cellspacing="0">
 <tr><td valign=top>
-{% block mainmenu %}
-		<div class="header">
-			<ul id="mainmenu" class="mainmenu">
-			<li class="logo"><a href="{% url 'home' %}"><div class="logo"></div></a></li>
+	{% block mainmenu %}
+	<div class="header">
+		<ul id="mainmenu" class="mainmenu">
+		<li class="logo"><a href="{% url 'home' %}"><div class="logo"></div></a></li>
 {% for m in menu %}
-	{% if not forloop.last %}
-			<li><a href="{% url m.url_name %}">{{m.title}}</a></li>
-	{% else %}
-			<li class="last"><a href="{% url m.url_name %}">{{m.title}}</a></li>
-	{% endif %}
+{% if not forloop.last %}
+		<li><a href="{% url m.url_name %}">{{m.title}}</a></li>
+{% else %}
+		<li class="last"><a href="{% url m.url_name %}">{{m.title}}</a></li>
+{% endif %}
 {% endfor %}
-				<li class="last"><a href = "{% url 'register' %}">Регистрация</a> | <a href="{url 'login' %}">Войти</a>       </li>
-			</ul>
-			<div class="clear"></div>
-		</div>
+		{% if request.user.is_authenticated %}
+		<li class="last"> {{user.username}} | <a href="{% url 'logout' %}">Выйти</a></li>
+		{% else %}
+		<li class="last"><a href="{%url 'register' %}">Регистрация</a> | <a href="{% url 'login' %}">Войти</a></li>
+		{% endif %}
+		</ul>
+		<div class="clear"></div>
+	</div>
 {% endblock mainmenu %}
 
 
@@ -53,11 +58,24 @@
 	{% endblock %}
 
 <!-- Блок контента -->
-	<div class="content-text">
-{% block content %}
-{% endblock %}
-	</div>
-<!-- Конец блока контента -->
+<div class="content-text">
+	{% block content %}
+			<h1>{{title}}</h1>
+
+	<form method="post">
+		{% csrf_token %}
+
+	{% for f in form %}
+	<p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+	<div class="form-error">{{ f.errors }}</div>
+	{% endfor %}
+
+		<button type="submit">Войти</button>
+	</form>
+
+	{% endblock %}
+		</div>
+	<!-- Конец блока контента -->
 
 </td></tr></table>
 </td></tr>
