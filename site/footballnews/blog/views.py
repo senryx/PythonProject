@@ -51,7 +51,7 @@ def logout_user(request):
 
 
 def contact(request):
-    return HttpResponse("Обратная связь")
+    return render(request, 'blog/back_voice.html', {'title': 'Обратная связь'})
 
 
 class AddPage(CreateView):
